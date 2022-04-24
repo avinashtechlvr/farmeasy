@@ -1,6 +1,5 @@
 import 'package:farmeasy/login/otp.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui';
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({Key? key}) : super(key: key);
@@ -15,6 +14,8 @@ class _LoginscreenState extends State<Loginscreen> {
   @override
   Widget build(BuildContext context) {
     const bgImgPath = './assets/images/loginscreenbg.png';
+    const bgImgUrl =
+        'https://raw.githubusercontent.com/avinashtechlvr/database/main/images/loginscreenbg.png';
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(

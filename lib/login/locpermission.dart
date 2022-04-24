@@ -1,4 +1,12 @@
+import 'dart:convert';
+
+import 'package:farmeasy/home/home.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
+import 'package:geocoding/geocoding.dart' as geocoding;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:farmeasy/functions/mongoDB.dart';
 
 class LocPermission extends StatefulWidget {
   final String phone;
@@ -10,6 +18,110 @@ class LocPermission extends StatefulWidget {
 }
 
 class _LocPermissionState extends State<LocPermission> {
+  late bool _serviceEnabled;
+  late PermissionStatus _permissionGranted;
+  LocationData? _userLocation;
+  late List<geocoding.Placemark> _placemarks;
+  late Map<String, dynamic> _data;
+  Future<void> _getUserLocation() async {
+    Location location = Location();
+
+    // Check if location service is enable
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    // Check if permission is granted
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    final _locationData = await location.getLocation();
+    _placemarks = await geocoding.placemarkFromCoordinates(
+        _locationData.latitude!, _locationData.longitude!);
+    // _placemarks.forEach((element) {
+    //   print(element.locality);
+    //   print(element.administrativeArea);
+    //   print(element.country);
+    // });
+    setState(() {
+      _userLocation = _locationData;
+      changePage();
+    });
+  }
+
+  predictresults(data) async {
+    // Change Here
+    _data = await getdata2(_placemarks[0].locality.toString());
+    // print("in prediction resluts");
+    // _data = await getdata2("Kakinada");
+    addtoSharedPref();
+    if (await getdata(widget.phone)) {
+      print("data already exists");
+    } else {
+      mongoadddata(data);
+    }
+    if (_data != null) {
+      setState(() {
+        // mongoadddata(data);
+        EasyLoading.showSuccess('Location Update Successfull!',
+            dismissOnTap: true);
+
+        EasyLoading.dismiss();
+
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    Home(location: _placemarks[0].locality.toString())),
+            (route) => false);
+      });
+    }
+  }
+
+  void addtoSharedPref() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isLoggedIn', true);
+    prefs.setString('phone', widget.phone);
+    // Chnage Here
+    prefs.setString('location', _placemarks[0].locality.toString());
+    // prefs.setString('location', "Kakinada");
+    //make json to string
+
+    prefs.setString('data', json.encode(_data));
+    // prefs.setString(jsonEncode(object));
+    // String temp = prefs.getString('data') ?? "";
+    // print(" Opening data from shared prefs: $temp");
+  }
+
+  void changePage() async {
+    Map<String, dynamic> data = {
+      'PhoneNumber': widget.phone,
+      'Location': _placemarks[0].locality.toString(),
+    };
+    predictresults(data);
+    EasyLoading.init();
+    EasyLoading.show(
+      status: 'Fetching Location Data',
+      dismissOnTap: false,
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _getUserLocation();
+  }
+
   @override
   Widget build(BuildContext context) {
     const bgImgPath = './assets/images/loginscreenbg.png';
@@ -53,6 +165,19 @@ class _LocPermissionState extends State<LocPermission> {
               ],
             ),
             const Padding(padding: EdgeInsets.only(top: 100)),
+            const SizedBox(height: 25),
+            // Display latitude & longtitude
+            _userLocation != null
+                ? Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Wrap(
+                      children: [
+                        Text('Your locality is : ${_placemarks[0].locality}'),
+                        const SizedBox(width: 10),
+                      ],
+                    ),
+                  )
+                : Container()
           ],
         ),
       ),

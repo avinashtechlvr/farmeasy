@@ -5,9 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:pinput/pin_put/pin_put.dart';
 
-// ignore: import_of_legacy_library_into_null_safe
-import 'package:shared_preferences/shared_preferences.dart';
-
 import 'dart:async';
 
 class OTPScreen extends StatefulWidget {
@@ -138,9 +135,6 @@ class _OTPScreenState extends State<OTPScreen> {
                                 builder: (context) =>
                                     LocPermission(phone: widget.phone)),
                             (route) => false);
-                        SharedPreferences prefs =
-                            await SharedPreferences.getInstance();
-                        // prefs.setBool('isLoggedIn', true);
                       }
                     });
                   } catch (e) {
@@ -218,7 +212,7 @@ class _OTPScreenState extends State<OTPScreen> {
           // ignore: avoid_print
           print(e.message);
         },
-        codeSent: (String verficationID, int resendToken) {
+        codeSent: (String verficationID, int? resendToken) {
           if (mounted) {
             setState(() {
               _verificationCode = verficationID;
