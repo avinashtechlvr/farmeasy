@@ -70,8 +70,7 @@ class _CropSuggState extends State<CropSugg> {
     setState(() {
       print("data : $data");
       _suggestions = data;
-      EasyLoading.showSuccess('Location Update Successfull!',
-          dismissOnTap: true);
+      EasyLoading.showSuccess('Fetched Crop Suggestions!', dismissOnTap: true);
 
       EasyLoading.dismiss();
     });

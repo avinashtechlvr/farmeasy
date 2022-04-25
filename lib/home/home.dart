@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key, required this.location}) : super(key: key);
@@ -95,16 +96,49 @@ class _HomeState extends State<Home> {
               leading: const Icon(Icons.grain),
               title: const Text('Crop Suggestion'),
               onTap: () => {
-                print("locdata : $_locdata"),
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CropSugg(
-                      location: location,
-                      data: _locdata,
+                if (!(_locationsData.contains(widget.location)))
+                  {
+                    setState(() {
+                      Alert(
+                        context: context,
+                        type: AlertType.error,
+                        title: "Location Issue",
+                        desc:
+                            "We are not in your Location yet, Please select other locations in our Location Page!",
+                        buttons: [
+                          DialogButton(
+                            child: const Text(
+                              "Update Now",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 16),
+                            ),
+                            onPressed: () {
+                              Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          UpdateLoc(_locationsData)),
+                                  (route) => false);
+                            },
+                            width: 140,
+                          )
+                        ],
+                      ).show();
+                    }),
+                  }
+                else
+                  {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CropSugg(
+                          location: location,
+                          data: _locdata,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                  }
+                // print("locdata : $_locdata"),
               },
             ),
           ],
