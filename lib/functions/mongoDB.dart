@@ -61,12 +61,32 @@ Future<Map<String, dynamic>> getdata2(String loc) async {
   var db = await Db.create(connectionurl);
   // connect to created connection
   await db.open();
-  var collection = db.collection('waterprediction');
+  var collection = db.collection('waterprediction1');
   var result = await collection.findOne(where.eq('Location', loc));
   await db.close();
   Map<String, dynamic> da = <String, dynamic>{};
   result?.forEach((key, value) {
     da[key] = value;
+  });
+  return da;
+}
+
+Future<List<Map<String, dynamic>>> getdata4(String State) async {
+  var db = await Db.create(connectionurl);
+  // connect to created connection
+  await db.open();
+  var collection = db.collection('waterprediction1');
+  var result = await collection.find(where.eq('State', State)).toList();
+  await db.close();
+  List<Map<String, dynamic>> da = [];
+  result.forEach((element) {
+    var temp = <String, dynamic>{};
+    element.forEach((key, value) {
+      // print("key : $key");
+      // print("value : $value");
+      temp[key] = value;
+    });
+    da.add(temp);
   });
   return da;
 }
@@ -77,20 +97,18 @@ Future<List<Map<String, dynamic>>> getdata3(int level) async {
   await db.open();
   var collection = db.collection('crops');
   var result = await collection.find(where.eq('Level', level)).toList();
-  print("result : $result");
+  // print("result : $result");
 
   List<Map<String, dynamic>> da = [];
-  print(result.first);
+  // print(result.first);
   result.forEach((element) {
     var temp = <String, dynamic>{};
     element.forEach((key, value) {
-      print("key : $key");
-      print("value : $value");
       temp[key] = value;
     });
     da.add(temp);
   });
-  print(da);
+  // print(da);
   await db.close();
   return da;
 }
@@ -108,16 +126,18 @@ void mongoupdate(String phone, String loc) async {
 }
 
 // get complete data from collection
-Future<List<String>> getcompleteData() async {
-  List<String> data = [];
+Future<Map<String, dynamic>> getcompleteData() async {
+  Map<String, dynamic> data = {};
   var db = await Db.create(connectionurl);
   // connect to created connection
   await db.open();
   var collection = db.collection('locations');
-  var result = await collection.findOne(where.eq("Key", "Locations"));
+  var result = await collection.findOne(where.eq("Key", "Location"));
   // print("result: $result");
-
-  data = List<String>.from(result?["Locations"]);
+  for (var i = 0; i < result!.length; i++) {
+    data[result.keys.elementAt(i)] = result.values.elementAt(i);
+  }
+  // data = List<String>.from(result?["Locations"]);
   await db.close();
   return data;
 }

@@ -1,5 +1,6 @@
 import 'package:farmeasy/functions/mongoDB.dart';
 import 'package:farmeasy/home/home.dart';
+import 'package:farmeasy/home/newhome.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
 import 'package:flutter/material.dart';
 
@@ -29,17 +30,19 @@ class _CropSuggState extends State<CropSugg> {
       dismissOnTap: false,
     );
     var jsonResponse = widget.data;
-    print("jsonResponse : $jsonResponse");
+    // print("jsonResponse : $jsonResponse");
     var level = 0.0;
     List keys = jsonResponse.keys.toList();
     keys.remove("Location");
     keys.remove("_id");
+    keys.remove("State");
+
     keys.sort();
     List<int> key = keys.map((e) => int.parse(e)).toList();
     key.sort();
     var lastkey = key.last;
     level = double.parse(jsonResponse[lastkey.toString()].toString());
-    print("level : $level");
+    // print("level : $level");
 
     locLevel = double.parse(level.toString());
 
@@ -61,14 +64,14 @@ class _CropSuggState extends State<CropSugg> {
 
   void getData() async {
     List<Map<String, dynamic>> data = await getdata3(_crop);
-    print("data : $data");
+    // print("data : $data");
     data.forEach((element) {
       element.removeWhere((key, value) => key == "Level");
     });
     // List<JsonTableColumn> temp = [];
 
     setState(() {
-      print("data : $data");
+      // print("data : $data");
       _suggestions = data;
       EasyLoading.showSuccess('Fetched Crop Suggestions!', dismissOnTap: true);
 
@@ -86,48 +89,69 @@ class _CropSuggState extends State<CropSugg> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Drawer(
-        child: Column(
-          children: <Widget>[
-            const DrawerHeader(
-              child: Center(
-                child: Text(
-                  'Side menu',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: 25),
-                ),
-              ),
-              decoration: BoxDecoration(
-                color: Colors.black,
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Home(location: widget.location),
-                  ),
-                ),
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.grain),
-              title: const Text('Crop Suggestion'),
-              onTap: () => {Navigator.of(context).pop()},
-            ),
-          ],
-        ),
-      ),
+      // drawer: Drawer(
+      //   child: Column(
+      //     children: <Widget>[
+      //       const DrawerHeader(
+      //         child: Center(
+      //           child: Text(
+      //             'Farm Easy',
+      //             textAlign: TextAlign.center,
+      //             style: TextStyle(color: Colors.white, fontSize: 25),
+      //           ),
+      //         ),
+      //         decoration: BoxDecoration(
+      //           color: const Color(0xff008080),
+      //         ),
+      //       ),
+      //       ListTile(
+      //         leading: const Icon(Icons.home),
+      //         title: const Text('Home'),
+      //         onTap: () => {
+      //           Navigator.push(
+      //             context,
+      //             MaterialPageRoute(
+      //               builder: (context) => Home(location: widget.location),
+      //             ),
+      //           ),
+      //         },
+      //       ),
+      //       ListTile(
+      //         leading: const Icon(Icons.grain),
+      //         title: const Text('Crop Suggestion'),
+      //         onTap: () => {Navigator.of(context).pop()},
+      //       ),
+      //     ],
+      //   ),
+      // ),
+
       appBar: AppBar(
         title: const Center(
             child: Text(
           "Crop Suggestion",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
         )),
+        backgroundColor: const Color(0xff008080),
       ),
+      bottomNavigationBar: BottomAppBar(
+          color: const Color(0xff008080),
+          child: Container(
+            child: IconButton(
+              icon: const Icon(
+                Icons.home,
+                size: 30,
+              ),
+              onPressed: () => {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        NewHomeScreen(location: widget.location),
+                  ),
+                ),
+              },
+            ),
+          )),
       body: Center(
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,

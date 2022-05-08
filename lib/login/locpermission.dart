@@ -1,12 +1,17 @@
 import 'dart:convert';
 
+import 'package:farmeasy/connection/updateLocation.dart';
 import 'package:farmeasy/home/home.dart';
+import 'package:farmeasy/home/newhome.dart';
+import 'package:farmeasy/home/welcome.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:farmeasy/functions/mongoDB.dart';
+import 'package:hive/hive.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class LocPermission extends StatefulWidget {
   final String phone;
@@ -23,6 +28,8 @@ class _LocPermissionState extends State<LocPermission> {
   LocationData? _userLocation;
   late List<geocoding.Placemark> _placemarks;
   late Map<String, dynamic> _data;
+  late Map<String, dynamic> _locationsData;
+  late List<String> _StateData;
   Future<void> _getUserLocation() async {
     Location location = Location();
 
@@ -31,7 +38,31 @@ class _LocPermissionState extends State<LocPermission> {
     if (!_serviceEnabled) {
       _serviceEnabled = await location.requestService();
       if (!_serviceEnabled) {
-        return;
+        Alert(
+          context: context,
+          type: AlertType.error,
+          title: "Location Issue",
+          desc:
+              "Location permission is not granted.You can select location manually",
+          buttons: [
+            DialogButton(
+              color: const Color(0xff008080),
+              child: const Text(
+                "Select Location",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+              onPressed: () {
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            UpdateLoc(_StateData, _locationsData)),
+                    (route) => false);
+              },
+              width: 140,
+            )
+          ],
+        ).show();
       }
     }
 
@@ -40,7 +71,32 @@ class _LocPermissionState extends State<LocPermission> {
     if (_permissionGranted == PermissionStatus.denied) {
       _permissionGranted = await location.requestPermission();
       if (_permissionGranted != PermissionStatus.granted) {
-        return;
+        // add here to show a dialog
+        Alert(
+          context: context,
+          type: AlertType.error,
+          title: "Location Issue",
+          desc:
+              "Location permission is not granted.You can select location manually",
+          buttons: [
+            DialogButton(
+              color: const Color(0xff008080),
+              child: const Text(
+                "Select Location",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+              onPressed: () {
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            UpdateLoc(_StateData, _locationsData)),
+                    (route) => false);
+              },
+              width: 140,
+            )
+          ],
+        ).show();
       }
     }
 
@@ -63,7 +119,8 @@ class _LocPermissionState extends State<LocPermission> {
     _data = await getdata2(_placemarks[0].locality.toString());
     // print("in prediction resluts");
     // _data = await getdata2("Kakinada");
-    addtoSharedPref();
+    // addtoSharedPref();
+    addtohive();
     if (await getdata(widget.phone)) {
       print("data already exists");
     } else {
@@ -80,26 +137,39 @@ class _LocPermissionState extends State<LocPermission> {
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-                builder: (context) =>
-                    Home(location: _placemarks[0].locality.toString())),
+                builder: (context) => WelcomeScreen(
+                    location: _placemarks[0].locality.toString())),
             (route) => false);
       });
     }
   }
 
+  void addtohive() {
+    var box = Hive.box('database');
+    box.put('isLoggedIn', true);
+    print("Checking what kept in login: ${box.get('isLoggedIn')}");
+    print("type of islogin: ${box.get('isLoggedIn').runtimeType}");
+    box.put('phone', widget.phone);
+    // Chnage Here
+    box.put('location', _placemarks[0].locality.toString());
+
+    box.put('data', json.encode(_data));
+    addtoSharedPref();
+  }
+
   void addtoSharedPref() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('isLoggedIn', true);
-    prefs.setString('phone', widget.phone);
-    // Chnage Here
-    prefs.setString('location', _placemarks[0].locality.toString());
-    // prefs.setString('location', "Kakinada");
-    //make json to string
+    //   prefs.setString('phone', widget.phone);
+    //   // Chnage Here
+    //   prefs.setString('location', _placemarks[0].locality.toString());
+    //   // prefs.setString('location', "Kakinada");
+    //   //make json to string
 
-    prefs.setString('data', json.encode(_data));
-    // prefs.setString(jsonEncode(object));
-    // String temp = prefs.getString('data') ?? "";
-    // print(" Opening data from shared prefs: $temp");
+    // prefs.setString('data', json.encode(_data));
+    //   // prefs.setString(jsonEncode(object));
+    //   // String temp = prefs.getString('data') ?? "";
+    //   // print(" Opening data from shared prefs: $temp");
   }
 
   void changePage() async {
@@ -118,7 +188,9 @@ class _LocPermissionState extends State<LocPermission> {
   @override
   void initState() {
     super.initState();
-
+    var box = Hive.box('database');
+    _locationsData = json.decode(box.get('allloc') ?? '{}');
+    _StateData = _locationsData.keys.toList();
     _getUserLocation();
   }
 

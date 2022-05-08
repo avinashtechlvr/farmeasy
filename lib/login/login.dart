@@ -119,7 +119,7 @@ class _LoginscreenState extends State<Loginscreen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            fillColor: const Color.fromRGBO(7, 249, 89, 0.24),
+                            fillColor: const Color(0xff80cbc4),
                             filled: true),
                         focusNode: inputNumber,
                         style: const TextStyle(
@@ -148,8 +148,7 @@ class _LoginscreenState extends State<Loginscreen> {
                           ),
                           style: TextButton.styleFrom(
                               elevation: 2,
-                              backgroundColor:
-                                  const Color.fromRGBO(16, 148, 45, 1),
+                              backgroundColor: const Color(0xff008080),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               )),

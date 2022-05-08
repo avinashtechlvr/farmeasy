@@ -9,27 +9,38 @@ import 'package:farmeasy/functions/mongoDB.dart';
 import 'package:flutter/material.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:hive/hive.dart';
 
 class UpdateLoc extends StatefulWidget {
   final List<String> _locationsData;
-  const UpdateLoc(this._locationsData, {Key? key}) : super(key: key);
+  final Map<String, dynamic> _locdata;
+  const UpdateLoc(this._locationsData, this._locdata, {Key? key})
+      : super(key: key);
   @override
   State<UpdateLoc> createState() => _UpdateLocState();
 }
 
 class _UpdateLocState extends State<UpdateLoc> {
-  String? _selectedItem;
+  String _selectedItem = "";
+  String _stateSelected = "";
   bool _checkbox = false;
   late final _search;
+  List<SearchFieldListItem<String>> _stateLoc = [];
+
   bool isloading = true;
   var _data;
   late final List<SearchFieldListItem<String>> _searchData;
   final List<SearchFieldListItem<String>> _tempData = [];
-  void setLocation() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('location', _selectedItem!);
-    String? phoneNo = prefs.getString('phone');
-    mongoupdate(phoneNo!, _selectedItem!);
+  void setLocation() {
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // prefs.setString('location', _selectedItem!);
+
+    var box = Hive.box('database');
+    box.put('location', _selectedItem);
+    // String? phoneNo = prefs.getString('phone');
+    String? phoneNo = box.get('phone');
+    mongoupdate(phoneNo!, _selectedItem);
   }
 
   @override
@@ -49,8 +60,10 @@ class _UpdateLocState extends State<UpdateLoc> {
   }
 
   void updateData() async {
-    _data = await getdata2(_selectedItem!);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _data = await getdata2(_selectedItem);
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    var box = Hive.box('database');
+
     print("Fetched Data : $_data");
     if (_data != null) {
       setState(() {
@@ -61,11 +74,15 @@ class _UpdateLocState extends State<UpdateLoc> {
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-                builder: (context) => Home(location: _selectedItem!)),
+                builder: (context) => Home(
+                      location: _selectedItem,
+                      selectedState: _stateSelected,
+                    )),
             (route) => false);
       });
     }
-    prefs.setString('data', json.encode(_data));
+    box.put('data', json.encode(_data));
+    // prefs.setString('data', json.encode(_data));
     print("Location Update Successfull");
   }
 
@@ -127,6 +144,66 @@ class _UpdateLocState extends State<UpdateLoc> {
                     const Padding(
                       padding: EdgeInsets.all(20.0),
                       child: Text(
+                        'Select your State',
+                        style: TextStyle(fontSize: 16, color: Colors.blueGrey),
+                      ),
+                    ),
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: SearchField<String>(
+                        hint: 'Select State',
+                        searchInputDecoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.blueGrey.shade200,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: Colors.blue.withOpacity(0.8),
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        maxSuggestionsInViewPort: 6,
+                        itemHeight: 50,
+                        suggestionsDecoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        onSuggestionTap: (value) {
+                          setState(() {
+                            _stateSelected = value.searchKey;
+                            var temp = widget._locdata[_stateSelected];
+                            for (var i in temp) {
+                              _stateLoc.add(SearchFieldListItem<String>(i,
+                                  child: Text(i)));
+                            }
+                          });
+
+                          // print(value);
+                        },
+                        suggestions: _searchData,
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text(
                         'Select your location',
                         style: TextStyle(fontSize: 16, color: Colors.blueGrey),
                       ),
@@ -176,7 +253,7 @@ class _UpdateLocState extends State<UpdateLoc> {
 
                           // print(value);
                         },
-                        suggestions: _searchData,
+                        suggestions: _stateLoc,
                       ),
                     ),
                   ],
@@ -232,20 +309,20 @@ class _UpdateLocState extends State<UpdateLoc> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _selectedItem == null
+                        _selectedItem == ""
                             ? const Text(
                                 'Please select your place to Continue',
                                 style: TextStyle(
                                     fontSize: 16, color: Colors.blueGrey),
                               )
-                            : Text(_selectedItem!,
+                            : Text(_selectedItem,
                                 style: TextStyle(
                                     fontSize: 16,
                                     color: Colors.grey.shade800,
                                     fontWeight: FontWeight.w600)),
                         MaterialButton(
                           onPressed: () {
-                            if (_selectedItem != null) {
+                            if (_selectedItem != "") {
                               if (_checkbox) {
                                 setLocation();
                               }
@@ -263,6 +340,7 @@ class _UpdateLocState extends State<UpdateLoc> {
                                 desc: "Please select your location from above",
                                 buttons: [
                                   DialogButton(
+                                    color: const Color(0xff008080),
                                     child: const Text(
                                       "Update Now",
                                       style: TextStyle(

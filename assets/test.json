@@ -1,0 +1,43 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "marker-color": "#7e7e7e",
+          "marker-size": "medium",
+          "marker-symbol": "dam",
+          "title": "Maudaha (Swami Brahmanand ) Dam",
+          "department": "Irrigation Dept., Govt. of UP",
+          "address": "Maudaha (Swami Brahmanand ) Dam, Khandwa, Distt. of Chhota Udaipur"
+       
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            25.58877623,
+            79.70789368
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "marker-color": "#7e7e7e",
+          "marker-size": "medium",
+          "marker-symbol": "dam",
+          "title": "Baghel Khand Dam",
+          "department": "Irrigation Dept., Govt. of UP",
+          "address": "Baghel Khand Dam, Khandwa, Distt. of Chhota Udaipur"
+       
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            27.62034988,
+            82.41830444
+          ]
+        }
+      }
+    ]
+  }

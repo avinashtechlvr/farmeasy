@@ -173,7 +173,7 @@ class _OTPScreenState extends State<OTPScreen> {
                 },
                 style: TextButton.styleFrom(
                     elevation: 2,
-                    backgroundColor: const Color.fromRGBO(16, 148, 45, 1),
+                    backgroundColor: const Color(0xff008080),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     )),

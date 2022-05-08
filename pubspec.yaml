@@ -62,12 +62,18 @@ dependencies:
   flutter_easyloading: ^3.0.3
   liquid_progress_indicator: ^0.4.0
   json_table: ^2.0.1
+  hive: ^2.1.0
+  path_provider: ^2.0.9
+  hive_generator: any
+  syncfusion_flutter_maps: ^20.1.52
+  getwidget: ^2.0.5
+
   
 
  
   
 flutter_native_splash:
-  color: "#0063dd"
+  color: "#008037"
   image: assets/appbg.png #u must place logo.png in your assets folder
   android: true
  
@@ -99,6 +105,13 @@ flutter:
   assets:
     - assets/images/loginscreenbg.png
     - assets/appbg.png
+    - assets/data.json
+    - assets/welcome.png
+    - assets/cropsawing.png
+    - assets/bargraph.png
+    - assets/images/1.png
+    - assets/images/2.png
+    - assets/images/3.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
